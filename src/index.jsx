@@ -2,18 +2,19 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import styles from './index.css'
-import { clientes } from './datos.js'
+//import { clientes } from './datos.js'
 import './assets/Spinner.gif';
+
 
 class ComboBoxC extends Component {
     constructor(props) {
         super(props)
         this.state = {
             ventanaVisible: false,
-            datos: clientes,
-            datosFiltrados: clientes,
+            datos: JSON.parse(this.props.datasource),
+            datosFiltrados: JSON.parse(this.props.datasource),
             valor: '',
-            nextVisible: clientes.length > 40,
+            nextVisible: JSON.parse(this.props.datasource).length > 40,
             prevVisible: false,
             pagina: 0,
             elementosPagina: 40
@@ -50,14 +51,14 @@ class ComboBoxC extends Component {
         this.setState({ ventanaVisible: false })
     }
     handleOnChange(e) {
-        var losClientes = clientes.filter(dato => dato.Nombre.includes(e.target.value));
+        var losClientes = this.state.datos.filter(dato => dato.Nombre.includes(e.target.value));
         this.setState({
             datosFiltrados: losClientes,
             valor: e.target.value
         })
     }
     handleOnSelectValor(e) {
-        var losClientes = clientes.filter(dato => dato.Nombre.includes(e.target.innerText));
+        var losClientes = this.state.datos.filter(dato => dato.Nombre.includes(e.target.innerText));
         this.setState({
             datosFiltrados: losClientes,
             ventanaVisible: false, valor: e.target.innerText
@@ -92,8 +93,7 @@ class ComboBoxC extends Component {
                     <input className={styles.ComboInput} type='text'
                         onFocus={(e) => this.handleOnFocus(e)}
                         onChange={(e) => this.handleOnChange(e)}
-                        value={this.state.valor} />
-                    <img src='spinner.gif' />
+                        value={this.state.valor} />                    
                 </div>
                 {this.state.ventanaVisible ?
                     <div className={styles.VentanaEmergente}>
@@ -133,4 +133,4 @@ class ComboBoxC extends Component {
 window.__comboBoxC_container = document.getElementById('comboBoxC')
 
 ReactDOM.render(
-    <ComboBoxC />, window.__comboBoxC_container)
+    <ComboBoxC datasource={window.__comboBoxC_container.dataset.datasource} />, window.__comboBoxC_container)
