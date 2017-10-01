@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import Item from './componentes/Item'
-import Columna from './componentes/Columna'
+import Columnas from './componentes/Columnas'
+import Pie from './componentes/Pie'
+import Boton from './componentes/Boton'
 import styles from './index.css'
 
 class ComboBoxC extends Component {
@@ -60,6 +62,7 @@ class ComboBoxC extends Component {
     }
     handleOnNext() {
         this.handleStateButtons(1)
+        this.divVentana.scrollTop = 0
     }
 
     handleOnPrev() {
@@ -79,6 +82,11 @@ class ComboBoxC extends Component {
     }
 
     render() {
+        let numeroPaginas =this.state.datosFiltrados.length / this.props.elementosPagina
+        if(numeroPaginas % 1 > 0) {
+             numeroPaginas = Math.floor(numeroPaginas) + 1
+        }
+
         return (
             <div ref={(div) => { this.divContenedor = div }}>
                 <div>
@@ -86,32 +94,25 @@ class ComboBoxC extends Component {
                         onFocus={this.handleOnFocus}
                         onChange={this.handleOnChange}
                         value={this.state.valor} />
+                        <span className="k-select"><span class="k-icon k-i-arrow-60-down"></span></span>
                 </div>
                 {this.state.ventanaVisible &&
-                    <div className={styles.VentanaEmergente}>
-                        {this.state.prevVisible &&
-                            <input type='button' id='BtAnterior' value='Anterior' onClick={this.handleOnPrev} />}
+                    <div ref={(div) => (this.divVentana = div)} className={styles.VentanaEmergente}>
+                        <Boton id='BtAnterior' visible={this.state.prevVisible} titulo='Anterior' onClick={this.handleOnPrev} />                        
                         <table>
-                            <thead>
-                                <Columna />
-                            </thead>
+                            <Columnas columnas={this.props.columnas} />
                             <tbody>
                                 {this.state.datosFiltrados.slice(
                                     this.state.pagina * this.props.elementosPagina,
                                     (this.state.pagina + 1) * this.props.elementosPagina).map((dato) => (
-                                        <Item onSelectValor={this.handleOnSelectValor} elemento={dato} />                                        
-                                    ))}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colSpan='3'>
-                                        {this.state.pagina + 1} de {this.state.datosFiltrados.length / this.props.elementosPagina}, {this.state.datosFiltrados.length}
-                                    </td>
-                                </tr>
-                            </tfoot>
+                                        <Item onSelectValor={this.handleOnSelectValor} elemento={dato} />
+                                    ))}                            
+                            </tbody>                            
+                            <Pie pagina={this.state.pagina + 1}
+                                totalPaginas={numeroPaginas}
+                                totalItems={this.state.datosFiltrados.length} />                            
                         </table>
-                        {this.state.nextVisible &&
-                            <input type='button' value='Siguiente' onClick={this.handleOnNext} />}
+                        <Boton id='BtSiguiente' visible={this.state.nextVisible} titulo='Siguiente' onClick={this.handleOnNext} />                        
                     </div>}
             </div>
         )
@@ -123,4 +124,5 @@ window.__comboBoxC_container = document.getElementById('comboBoxC')
 
 ReactDOM.render(
     <ComboBoxC datasource={JSON.parse(window.__comboBoxC_container.dataset.datasource)}
+        columnas={JSON.parse(window.__comboBoxC_container.dataset.columnas)}
         elementosPagina={200} />, window.__comboBoxC_container)
