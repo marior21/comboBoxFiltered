@@ -7,7 +7,7 @@
     "production": "webpack -p",
     "build": "webpack --colors",
     "serve": "webpack-dev-server --content-base /build --colors --progress",
-    "start": "npm run production && npm run serve && npm open http://localhost:8080"
+    "start": "npm run build && npm run serve && npm open http://localhost:8080"
   },
   "author": "Mario Rivero",
   "license": "ISC",
