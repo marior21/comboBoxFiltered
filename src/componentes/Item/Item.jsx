@@ -3,9 +3,9 @@ import PropTypes from 'prop-types'
 
 export default function Item(props) {
     return (
-        <tr onClick={props.onSelectValor}>
+        <tr onClick={props.onSelectItem}>
              {props.columnas.map(cadaColumna => 
-                    <td>{props.elemento[cadaColumna]}</td>
+                    <td className='k-item'>{props.elemento[cadaColumna]}</td>
                 )}         
         </tr>
     )
@@ -14,5 +14,5 @@ export default function Item(props) {
 Item.PropTypes = {
     elemento: PropTypes.object.isRequired,
     columnas: PropTypes.array.isRequired,
-    onSelectValor: PropTypes.func.isRequired    
+    onSelectItem: PropTypes.func.isRequired    
 }

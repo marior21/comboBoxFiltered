@@ -14,7 +14,8 @@ class ComboBoxC extends Component {
             ventanaVisible: false,
             datos: this.props.datasource,
             datosFiltrados: this.props.datasource,
-            valor: '',
+            filtro: '',
+            selectValue: '',
             nextVisible: this.props.datasource.length > this.props.elementosPagina,
             prevVisible: false,
             pagina: 0,
@@ -25,7 +26,6 @@ class ComboBoxC extends Component {
         this.handleOnFocus = this.handleOnFocus.bind(this)
         this.handleOnNext = this.handleOnNext.bind(this)
         this.handleOnPrev = this.handleOnPrev.bind(this)
-        this.handleOnSelectValor = this.handleOnSelectValor.bind(this)
         this.handleStateButtons = this.handleStateButtons.bind(this)
     }
 
@@ -37,42 +37,56 @@ class ComboBoxC extends Component {
         window.removeEventListener('click', this.handleDocumentClick)
     }
 
+    getDatos(elfiltro) {
+        return elfiltro ? this.state.datos.filter((dato) => {
+            let contiene = false
+            this.props.columnas.forEach((columna) => {
+                if (dato[columna].toUpperCase().includes(elfiltro.toUpperCase())) {
+                    contiene = true
+                }
+            });
+            return contiene
+        }) : this.state.datos;
+    }
+
     handleDocumentClick(e) {
         const contenedor = this.divContenedor
-        if (!contenedor.contains(e.target) && e.target.id !== 'BtAnterior') {
+        if (!contenedor.contains(e.target) && e.target.id !== 'BtAnterior' && e.target.id !== 'BtSiguiente') {
             this.setState({ ventanaVisible: false })
         }
     }
 
     handleOnFocus(e) {
-        this.setState({ ventanaVisible: true })
+        if (this.state.ventanaVisible) {
+            return
+        }
+        this.setState({
+            ventanaVisible: true,
+            pagina: 0,
+            nextVisible: this.props.elementosPagina < this.state.datosFiltrados.length,
+            prevVisible: false
+        })
     }
 
     handleOnChange(e) {
-        var losDatos = this.state.datos.filter((dato) => {
-            let contiene = false
-            this.props.columnas.forEach((columna) => {
-                if (dato[columna].toUpperCase().includes(e.target.value.toUpperCase())) {
-                    contiene = true
-                }
-            });
-            return contiene
-        });
+        var losDatos = this.getDatos(e.target.value)
         this.setState({
             datosFiltrados: losDatos,
-            valor: e.target.value,
+            filtro: e.target.value,
             pagina: 0,
             nextVisible: this.props.elementosPagina < losDatos.length,
             mostrarNoResultados: losDatos.length == 0
         })
 
     }
-    handleOnSelectValor(e) {
-        var losDatos = this.state.datos.filter(dato => dato.Nombre.includes(e.target.value));
-        this.setState({
-            datosFiltrados: losDatos,
-            ventanaVisible: false, valor: e.target.innerText
-        })
+    handleOnSelectItem(elDato) {
+        this.setState((prevState, props) => ({
+            datosFiltrados: prevState.datos,
+            ventanaVisible: false,
+            filtro: elDato[props.campoDescripcion],
+            selectValue: elDato[props.campoIdentificador]
+        }))
+
     }
     handleOnNext() {
         this.handleStateButtons(1)
@@ -91,7 +105,8 @@ class ComboBoxC extends Component {
             ventanaVisible: true,
             pagina: prevState.pagina + sumatorio,
             prevVisible: prevState.pagina + sumatorio > 0,
-            nextVisible: ((prevState.pagina + sumatorio) * props.elementosPagina) < prevState.datosFiltrados.length
+            nextVisible:
+            ((prevState.pagina + 1 + sumatorio) * props.elementosPagina) < prevState.datosFiltrados.length
         }))
     }
 
@@ -100,55 +115,77 @@ class ComboBoxC extends Component {
         if (numeroPaginas % 1 > 0) {
             numeroPaginas = Math.floor(numeroPaginas) + 1
         }
+        let mostrarPie = numeroPaginas > 1 && this.state.mostrarNoResultados == false
+        let mostrarCabecera = this.props.columnas.length > 1
+        let estilosPrincipal = 'k-widget k-combobox k-header'
+        let estilosSecundario = 'k-dropdown-wrap k-state-default'
+        if(this.state.ventanaVisible) {
+            estilosPrincipal += ' k-state-border-down'
+            estilosSecundario += ' k-active k-state-border-down'
+        }        
 
         return (
-            <div ref={(div) => { this.divContenedor = div }}>
-                <div>
-                    <input className={styles.ComboInput} type='text'
-                        onFocus={this.handleOnFocus}
+            <span ref={(span) => { this.divContenedor = span }} className={estilosPrincipal}>
+                <span className={estilosSecundario}>
+                    <input style={{ width: '100%' }} type='text' className='k-input'
+                        onFocus={this.handleOnFocus} placeholder="Seleccione un elemento"
                         onChange={this.handleOnChange}
-                        value={this.state.valor} />
-                    <span className="k-select"><span className="k-icon k-i-arrow-60-down"></span></span>
-                </div>
+                        value={this.state.filtro} />
+                    <input type='text' style={{ display: 'none' }}
+                        value={this.state.selectValue} />
+                    <span className="k-select"  onClick={this.handleOnFocus}><span className="k-icon k-i-arrow-s"></span></span>
+                </span>
                 {this.state.ventanaVisible &&
-                    <div ref={(div) => (this.divVentana = div)} className={styles.VentanaEmergente}>
-                        <Boton id='BtAnterior' visible={this.state.prevVisible} titulo='Anterior' onClick={this.handleOnPrev} />
-                        <table>
-                            <Columnas columnas={this.props.columnas} />
+                    <div ref={(div) => (this.divVentana = div)} className='k-animation-container'>
+                        <Boton id='BtAnterior'
+                            visible={this.state.prevVisible}
+                            titulo='Anterior'
+                            onClick={this.handleOnPrev} />
+                        <table className='k-list k-reset'>
+                            {mostrarCabecera && <Columnas columnas={this.props.columnas} />}
                             <tbody>
                                 {this.state.datosFiltrados.slice(
                                     this.state.pagina * this.props.elementosPagina,
                                     (this.state.pagina + 1) * this.props.elementosPagina).map((dato) => (
-                                        <Item onSelectValor={this.handleOnSelectValor} elemento={dato} columnas={this.props.columnas} />
+                                        <Item key={dato[this.props.campoIdentificador]}
+                                            onSelectItem={() => this.handleOnSelectItem(dato)}
+                                            elemento={dato} columnas={this.props.columnas} />
                                     ))}
                             </tbody>
-                            {this.state.mostrarNoResultados == false && <Pie pagina={this.state.pagina + 1}
+                            {mostrarPie && <Pie pagina={this.state.pagina + 1}
                                 totalPaginas={numeroPaginas}
                                 totalItems={this.state.datosFiltrados.length} />}
                         </table>
-                        {this.state.mostrarNoResultados && <div className='DivNoResultados'>No se han encontrado resultados</div>}
-                        <Boton id='BtSiguiente' visible={this.state.nextVisible} titulo='Siguiente' onClick={this.handleOnNext} />
+                        {this.state.mostrarNoResultados &&
+                            <div className='DivNoResultados'>No se han encontrado resultados</div>}
+                        <Boton id='BtSiguiente'
+                            visible={this.state.nextVisible}
+                            titulo='Siguiente'
+                            onClick={this.handleOnNext} />
                     </div>}
-            </div>
+            </span>
         )
     }
 }
 
-
 ComboBoxC.PropTypes = {
     datasource: PropTypes.array.isRequired,
     columnas: PropTypes.array.isRequired,
-    elementosPagina: PropTypes.number
+    elementosPagina: PropTypes.number,
+    campoIdentificador: PropTypes.string.isRequired,
+    campoDescripcion: PropTypes.string.isRequired
 }
 
 ComboBoxC.defaultProps = {
     elementosPagina: 100
 }
 
-window.__comboBoxC_container = document.getElementById('comboBoxC')
-
-ReactDOM.render(
-    <ComboBoxC
-        datasource={JSON.parse(window.__comboBoxC_container.dataset.datasource)}
-        columnas={JSON.parse(window.__comboBoxC_container.dataset.columnas)}
-        elementosPagina={200} />, window.__comboBoxC_container)
+document.querySelectorAll('[data-comboboxc]').forEach((cadacombo) => {
+    ReactDOM.render(
+        <ComboBoxC
+            datasource={JSON.parse(cadacombo.dataset.datasource)}
+            columnas={JSON.parse(cadacombo.dataset.columnas)}
+            elementosPagina={cadacombo.dataset.elementosPagina}
+            campoIdentificador={cadacombo.dataset.campoId}
+            campoDescripcion={cadacombo.dataset.campoDescripcion} />, cadacombo)
+});
