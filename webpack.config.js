@@ -7,10 +7,10 @@ const cssModules = 'modules&importLoaders=1&localIdentName=[name]__[local]__[has
 module.exports = {
     resolve: {
         extensions: ['.js', '.jsx'],
-        alias: {
-            'react': 'preact-compat',
-            'react-dom': 'preact-compat'
-          }
+      /*  alias: {
+            'react': 'inferno-compat',
+            'react-dom': 'inferno-compat'
+          }*/
     },
 
     entry: ['./src/index.jsx'],
@@ -30,7 +30,7 @@ module.exports = {
 
     devServer: {
         host: '0.0.0.0',
-        port: 8080,
+        port: 3000,
         inline: true
     },
 

@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
-import Item from './componentes/Item'
-import Columnas from './componentes/Columnas'
-import Pie from './componentes/Pie'
-import Boton from './componentes/Boton'
+import PropTypes from 'prop-types'
+import Item from './componentes/Item/Item.jsx'
+import Columnas from './componentes/Columnas/Columnas.jsx'
+import Pie from './componentes/Pie/Pie.jsx'
+import Boton from './componentes/Boton/Boton.jsx'
 import styles from './index.css'
 
 class ComboBoxC extends Component {
@@ -16,7 +17,8 @@ class ComboBoxC extends Component {
             valor: '',
             nextVisible: this.props.datasource.length > this.props.elementosPagina,
             prevVisible: false,
-            pagina: 0
+            pagina: 0,
+            mostrarNoResultados: this.props.datasource.length == 0
         }
         this.handleDocumentClick = this.handleDocumentClick.bind(this)
         this.handleOnChange = this.handleOnChange.bind(this)
@@ -47,16 +49,28 @@ class ComboBoxC extends Component {
     }
 
     handleOnChange(e) {
-        var losClientes = this.state.datos.filter(dato => dato.Nombre.includes(e.target.value));
+        var losDatos = this.state.datos.filter((dato) => {
+            let contiene = false
+            this.props.columnas.forEach((columna) => {
+                if (dato[columna].toUpperCase().includes(e.target.value.toUpperCase())) {
+                    contiene = true
+                }
+            });
+            return contiene
+        });
         this.setState({
-            datosFiltrados: losClientes,
-            valor: e.target.value
+            datosFiltrados: losDatos,
+            valor: e.target.value,
+            pagina: 0,
+            nextVisible: this.props.elementosPagina < losDatos.length,
+            mostrarNoResultados: losDatos.length == 0
         })
+
     }
     handleOnSelectValor(e) {
-        var losClientes = this.state.datos.filter(dato => dato.Nombre.includes(e.target.innerText));
+        var losDatos = this.state.datos.filter(dato => dato.Nombre.includes(e.target.value));
         this.setState({
-            datosFiltrados: losClientes,
+            datosFiltrados: losDatos,
             ventanaVisible: false, valor: e.target.innerText
         })
     }
@@ -82,9 +96,9 @@ class ComboBoxC extends Component {
     }
 
     render() {
-        let numeroPaginas =this.state.datosFiltrados.length / this.props.elementosPagina
-        if(numeroPaginas % 1 > 0) {
-             numeroPaginas = Math.floor(numeroPaginas) + 1
+        let numeroPaginas = this.state.datosFiltrados.length / this.props.elementosPagina
+        if (numeroPaginas % 1 > 0) {
+            numeroPaginas = Math.floor(numeroPaginas) + 1
         }
 
         return (
@@ -94,35 +108,47 @@ class ComboBoxC extends Component {
                         onFocus={this.handleOnFocus}
                         onChange={this.handleOnChange}
                         value={this.state.valor} />
-                        <span className="k-select"><span class="k-icon k-i-arrow-60-down"></span></span>
+                    <span className="k-select"><span className="k-icon k-i-arrow-60-down"></span></span>
                 </div>
                 {this.state.ventanaVisible &&
                     <div ref={(div) => (this.divVentana = div)} className={styles.VentanaEmergente}>
-                        <Boton id='BtAnterior' visible={this.state.prevVisible} titulo='Anterior' onClick={this.handleOnPrev} />                        
+                        <Boton id='BtAnterior' visible={this.state.prevVisible} titulo='Anterior' onClick={this.handleOnPrev} />
                         <table>
                             <Columnas columnas={this.props.columnas} />
                             <tbody>
                                 {this.state.datosFiltrados.slice(
                                     this.state.pagina * this.props.elementosPagina,
                                     (this.state.pagina + 1) * this.props.elementosPagina).map((dato) => (
-                                        <Item onSelectValor={this.handleOnSelectValor} elemento={dato} />
-                                    ))}                            
-                            </tbody>                            
-                            <Pie pagina={this.state.pagina + 1}
+                                        <Item onSelectValor={this.handleOnSelectValor} elemento={dato} columnas={this.props.columnas} />
+                                    ))}
+                            </tbody>
+                            {this.state.mostrarNoResultados == false && <Pie pagina={this.state.pagina + 1}
                                 totalPaginas={numeroPaginas}
-                                totalItems={this.state.datosFiltrados.length} />                            
+                                totalItems={this.state.datosFiltrados.length} />}
                         </table>
-                        <Boton id='BtSiguiente' visible={this.state.nextVisible} titulo='Siguiente' onClick={this.handleOnNext} />                        
+                        {this.state.mostrarNoResultados && <div className='DivNoResultados'>No se han encontrado resultados</div>}
+                        <Boton id='BtSiguiente' visible={this.state.nextVisible} titulo='Siguiente' onClick={this.handleOnNext} />
                     </div>}
             </div>
         )
     }
+}
 
+
+ComboBoxC.PropTypes = {
+    datasource: PropTypes.array.isRequired,
+    columnas: PropTypes.array.isRequired,
+    elementosPagina: PropTypes.number
+}
+
+ComboBoxC.defaultProps = {
+    elementosPagina: 100
 }
 
 window.__comboBoxC_container = document.getElementById('comboBoxC')
 
 ReactDOM.render(
-    <ComboBoxC datasource={JSON.parse(window.__comboBoxC_container.dataset.datasource)}
+    <ComboBoxC
+        datasource={JSON.parse(window.__comboBoxC_container.dataset.datasource)}
         columnas={JSON.parse(window.__comboBoxC_container.dataset.columnas)}
         elementosPagina={200} />, window.__comboBoxC_container)
