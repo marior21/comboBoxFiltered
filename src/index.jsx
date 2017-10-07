@@ -51,7 +51,9 @@ class ComboBoxC extends Component {
 
     handleDocumentClick(e) {
         const contenedor = this.divContenedor
-        if (!contenedor.contains(e.target) && e.target.id !== 'BtAnterior' && e.target.id !== 'BtSiguiente') {
+        if (!contenedor.contains(e.target) &&
+            e.target.id !== 'BtAnterior' &&
+            e.target.id !== 'BtSiguiente') {
             this.setState({ ventanaVisible: false })
         }
     }
@@ -67,7 +69,7 @@ class ComboBoxC extends Component {
             prevVisible: false
         })
     }
-
+    //TODO Hay que obtener los datos dento de una función en el setstate
     handleOnChange(e) {
         var losDatos = this.getDatos(e.target.value)
         this.setState({
@@ -119,10 +121,10 @@ class ComboBoxC extends Component {
         let mostrarCabecera = this.props.columnas.length > 1
         let estilosPrincipal = 'k-widget k-combobox k-header'
         let estilosSecundario = 'k-dropdown-wrap k-state-default'
-        if(this.state.ventanaVisible) {
+        if (this.state.ventanaVisible) {
             estilosPrincipal += ' k-state-border-down'
             estilosSecundario += ' k-active k-state-border-down'
-        }        
+        }
 
         return (
             <span ref={(span) => { this.divContenedor = span }} className={estilosPrincipal}>
@@ -133,7 +135,7 @@ class ComboBoxC extends Component {
                         value={this.state.filtro} />
                     <input type='text' style={{ display: 'none' }}
                         value={this.state.selectValue} />
-                    <span className="k-select"  onClick={this.handleOnFocus}><span className="k-icon k-i-arrow-s"></span></span>
+                    <span className="k-select" onClick={this.handleOnFocus}><span className="k-icon k-i-arrow-s"></span></span>
                 </span>
                 {this.state.ventanaVisible &&
                     <div ref={(div) => (this.divVentana = div)} className='k-animation-container'>
