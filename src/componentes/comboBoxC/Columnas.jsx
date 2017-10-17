@@ -1,12 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import styles from './index.css'
 
 export default function Columnas(props) {
     return (
-        <thead>
+        <thead className={styles.Cabecera}>
             <tr>
                 {props.columnas.map(cadaColumna =>
-                    <td>{cadaColumna}</td>
+                    <td>{cadaColumna.Caption}</td>
                 )}
             </tr>
         </thead>

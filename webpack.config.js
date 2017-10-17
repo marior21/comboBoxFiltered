@@ -15,7 +15,8 @@ module.exports = {
 
     entry: ['./src/index.jsx'],
     output: {
-        filename: 'app.js',
+        filename: 'semicrol.react.js',
+        //path: '/Desarrollo/Fundanet/Fundanet/SRC/Desarrollo/NET/Web/Fundanet.Convocatorias.Web/Scripts',
         path: '/build',
         publicPath: '/'
     },
@@ -36,6 +37,6 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({ template: './src/assets/index.html' }),
-        new ExtractTextPlugin({ filename: 'style.css', disable: false, allChunks: true })
+        new ExtractTextPlugin({ filename: 'semicrol.react.css', disable: false, allChunks: true })
     ]
 }

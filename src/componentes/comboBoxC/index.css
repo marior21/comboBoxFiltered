@@ -1,0 +1,81 @@
+.VentanaEmergente{  
+    /*height: 220px;*/
+    z-index: 5000;
+    overflow: auto;
+    position: absolute;
+    background-color: #ebebeb;
+    -moz-border-radius:  0px 0px 4px 4px;
+    -webkit-border-radius:  0px 0px 4px 4px;
+    border-radius: 0px 0px 4px 4px;
+}
+.TablaVentana { 
+    width: 98.5%;
+    border-collapse: collapse;
+    border: 0px;  
+    border-color: #c5c5c5;
+    background-color: #e9e9e9;
+    margin: 5px;
+}
+
+.Item {  
+    line-height: 1.8em;
+    color: #2e2e2e;
+}
+.Item:nth-child(odd) {
+    background-color: #f5f5f5;
+}
+.Item td {
+    border: 0px;
+    padding: 5px 5px 5px 10px;
+}
+.Item:hover td:first-child,
+.Seleccionado td:first-child 
+ {
+    border-top-left-radius: 4px; 
+    -moz-border-top-left-radius:  4px;
+    -webkit-border-top-left-radius:  4px;
+    border-bottom-left-radius: 4px; 
+    -moz-border-bottom-left-radius:  4px;
+    -webkit-border-bottom-left-radius:  4px;
+}
+.Item:hover td:last-child,
+.Seleccionado td:last-child {
+    border-top-right-radius: 4px; 
+    -moz-border-top-right-radius:  4px;
+    -webkit-border-top-right-radius:  4px;
+    border-bottom-right-radius: 4px; 
+    -moz-border-bottom-right-radius:  4px;
+    -webkit-border-bottom-right-radius:  4px;
+}
+.Item:hover {
+    -webkit-transition: box-shadow .15s ease-out;
+    -moz-transition: box-shadow .15s ease-out;
+    -o-transition: box-shadow .15s ease-out;
+    transition: box-shadow .15s ease-out;   
+    cursor: pointer;  
+    background-image: none, linear-gradient(to bottom, #e9e9e9 0%, #c5c5c5 100%)!important;
+    background-position: 50% 50%;
+    background-color: #e3e3e3;   
+    color: #2e2e2e!important; 
+}
+.Seleccionado {
+    color: #fff!important;
+    background-image: url(/Imagenes/FondoTopTabla.jpg);
+    background-position: top;
+    background-repeat: repeat-x;
+}
+.Cabecera {
+    color: #fff!important;
+    background-image: url(/Imagenes/FondoTopTabla.jpg);
+    background-position: top;
+    background-repeat: repeat-x;   
+}
+.Cabecera td {
+    overflow: hidden;
+    border-style: solid;
+    border-width: 0 0 1px 1px;
+    padding: .5em .6em .4em .6em;
+    font-weight: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
