@@ -4,6 +4,7 @@ import Item from './Item'
 import Columnas from './Columnas'
 import Pie from './Pie'
 import Boton from './Boton'
+import configControl from './ConfiguracionControl'
 import styles from './index.css'
 
 export default class ComboBoxC extends Component {
@@ -16,27 +17,31 @@ export default class ComboBoxC extends Component {
             filtro: this.props.valor ?
                 this.props.datasource.find(
                     (cadaElemento) => cadaElemento[this.props.campoIdentificador] === this.props.valor)[this.props.campoDescripcion] : '',
-            selectValue: this.props.valor,
+            selectValue: this.props.valor ? this.props.valor : '',
             nextVisible: this.props.datasource.length > this.props.elementosPagina,
             prevVisible: false,
             pagina: 0,
-            mostrarNoResultados: this.props.datasource.length == 0,
-            offsetTopContenedor:0
+            mostrarNoResultados: this.props.datasource.length == 0
         }
+        this.handleEscKey = this.handleEscKey.bind(this);
         this.handleDocumentClick = this.handleDocumentClick.bind(this)
         this.handleOnChange = this.handleOnChange.bind(this)
-        this.handleOnFocus = this.handleOnFocus.bind(this)
+        //this.handleOnFocus = this.handleOnFocus.bind(this)
         this.handleOnNext = this.handleOnNext.bind(this)
         this.handleOnPrev = this.handleOnPrev.bind(this)
         this.handleStateButtons = this.handleStateButtons.bind(this)
+        this.handleOnClickArrow = this.handleOnClickArrow.bind(this)
     }
 
     componentDidMount() {
         window.addEventListener('click', this.handleDocumentClick)
+        window.addEventListener("keydown", this.handleEscKey, false);
+
     }
 
     componentWillUnmount() {
         window.removeEventListener('click', this.handleDocumentClick)
+        window.removeEventListener("keydown", this.handleEscKey, false);
     }
 
     getDatos(elfiltro) {
@@ -51,6 +56,12 @@ export default class ComboBoxC extends Component {
         }) : this.state.datos;
     }
 
+    handleEscKey(event) {
+        if (event.keyCode === 27) {
+            this.setState({ ventanaVisible: false })
+        }
+    }
+
     handleDocumentClick(e) {
         const contenedor = this.divContenedor
         if (!contenedor.contains(e.target) &&
@@ -60,17 +71,19 @@ export default class ComboBoxC extends Component {
         }
     }
 
-    handleOnFocus() {
-        if (this.state.ventanaVisible || this.props.readonly === 'readonly') {
+    handleOnClickArrow() {
+        if (this.props.readonly === 'readonly') {
             return
         }
-        this.setState({
-            ventanaVisible: true,
+        this.inputFiltro.focus()
+        this.setState((prevState, props) => ({
+            ventanaVisible: !prevState.ventanaVisible,
             pagina: 0,
-            nextVisible: this.props.elementosPagina < this.state.datosFiltrados.length,
+            nextVisible: props.elementosPagina < prevState.datosFiltrados.length,
             prevVisible: false
-        })
+        }))
     }
+
     //TODO Hay que obtener los datos dento de una función en el setstate
     handleOnChange(e) {
         var losDatos = this.getDatos(e.target.value)
@@ -79,13 +92,10 @@ export default class ComboBoxC extends Component {
             filtro: e.target.value,
             pagina: 0,
             nextVisible: this.props.elementosPagina < losDatos.length,
-            mostrarNoResultados: losDatos.length == 0
+            mostrarNoResultados: losDatos.length == 0,
+            selectValue: '',
+            ventanaVisible: true
         })
-
-        if (e.target.value === '') {
-            this.setState({ selectValue: '' })
-        }
-
     }
     handleOnSelectItem(elDato) {
         this.setState((prevState, props) => ({
@@ -120,61 +130,22 @@ export default class ComboBoxC extends Component {
 
     componentDidCatch(error, info) {
         // Display fallback UI
-        this.setState({ hasError: true });
-        console.log(error);
+        this.setState({ hasError: true })
+        console.log(error)
         // You can also log the error to an error reporting service
         // logErrorToMyService(error, info);
     }
 
     render() {
-        
-
-        const windowHeight = "innerHeight" in window ? window.innerHeight : document.documentElement.offsetHeight;
-        const body = document.body;
-        const html = document.documentElement;
-        const docHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight,  html.scrollHeight, html.offsetHeight);
-        const windowBottom = windowHeight + window.pageYOffset;
-       // console.log( body.scrollHeight)
-       // console.log( body.offsetHeight)
-      //  console.log(html.clientHeight)
-      //  console.log(html.scrollHeight)
-        console.log (this.divContenedor ? this.divContenedor.offsetTop :-1)
-        //console.log (this.divVentana ? this.divVentana.clientHeight :0)
-     
-
-      //  console.log(windowHeight)
-      //  console.log(docHeight)
-      //  console.log(windowBottom)      
-      //  console.log(window.pageYOffset)
-      
-        let altura = String(html.clientHeight - 210) + 'px';
-       // console.log(altura)
-        let ancho = this.props.width ? this.props.width : '100%'
-        let numeroPaginas = this.state.datosFiltrados.length / this.props.elementosPagina
-        if (numeroPaginas % 1 > 0) {
-            numeroPaginas = Math.floor(numeroPaginas) + 1
-        }
-        let mostrarPie = numeroPaginas > 1 && this.state.mostrarNoResultados == false
-        let mostrarCabecera = this.props.columnas.length > 1
-        let estilosPrincipal = 'k-widget k-combobox k-header'
-        let estilosSecundario = 'k-widget k-dropdown-wrap k-state-default'
-        let estilosInput = 'k-input'
-        if (this.state.ventanaVisible) {
-            estilosPrincipal += ' k-state-border-down'
-            estilosSecundario += ' k-active k-state-border-down'
-        }
-        if (this.props.estilo) {
-            estilosInput += ' ' + this.props.estilo
-        }
-
+        const config = configControl(this.props, this.state)
         return (
             <span ref={(span) => { this.divContenedor = span }}
                 title={this.props.titulo}
-                className={estilosPrincipal}
+                className={config.estilosPrincipal}
                 style={this.props.width ? { width: this.props.width } : { width: '100%' }}>
-                <span className={estilosSecundario}>
-                    <input style={{ width: '100%' }} type='text' className={estilosInput}
-                        onFocus={this.handleOnFocus} placeholder={this.props.placeHolder}
+                <span className={config.estilosSecundario}>
+                    <input ref={(input) => { this.inputFiltro = input }} style={{ width: '100%' }} type='text' className={config.estilosInput}
+                        placeholder={this.props.placeHolder}
                         onChange={this.handleOnChange}
                         value={this.state.filtro}
                         readOnly={this.props.readonly} />
@@ -186,18 +157,14 @@ export default class ComboBoxC extends Component {
                         data-val-required={this.props.mensajeObligatorio}
                         readOnly={this.props.readonly}
                     />
-                    {this.props.readonly != 'readonly' && <span className="k-select" onClick={this.handleOnFocus}><span className="k-icon k-i-arrow-s"></span></span>}
+                    {this.props.readonly != 'readonly' && <span className="k-select" onClick={this.handleOnClickArrow}><span className="k-icon k-i-arrow-s"></span></span>}
                 </span>
                 {this.state.ventanaVisible &&
                     <div ref={(div) => (this.divVentana = div)}
                         className={['k-animation-container ' + styles.VentanaEmergente]}
-                        style={{ width: ancho }}>
-                        <Boton id='BtAnterior'
-                            visible={this.state.prevVisible}
-                            titulo='Anterior'
-                            onClick={this.handleOnPrev} />
+                        style={{ width: config.ancho, height: config.altura, top: config.topVentana }}>
                         <table className={styles.TablaVentana}>
-                            {mostrarCabecera && <Columnas columnas={this.props.columnas} />}
+                            {config.mostrarCabecera && <Columnas columnas={this.props.columnas} />}
                             <tbody>
                                 {this.state.datosFiltrados.slice(
                                     this.state.pagina * this.props.elementosPagina,
@@ -205,19 +172,26 @@ export default class ComboBoxC extends Component {
                                         <Item key={dato[this.props.campoIdentificador]}
                                             onSelectItem={() => this.handleOnSelectItem(dato)}
                                             elemento={dato} columnas={this.props.columnas}
+                                            filtro={this.state.selectValue ? '' : this.state.filtro}
                                             seleccionado={dato[this.props.campoIdentificador] === this.state.selectValue} />
                                     ))}
                             </tbody>
-                            {mostrarPie && <Pie pagina={this.state.pagina + 1}
-                                totalPaginas={numeroPaginas}
+                            {config.mostrarPie && <Pie pagina={this.state.pagina + 1}
+                                totalPaginas={config.numeroPaginas}
                                 totalItems={this.state.datosFiltrados.length} />}
                         </table>
                         {this.state.mostrarNoResultados &&
-                            <div className='DivNoResultados'>No se han encontrado resultados</div>}
-                        <Boton id='BtSiguiente'
-                            visible={this.state.nextVisible}
-                            titulo='Siguiente'
-                            onClick={this.handleOnNext} />
+                            <div className={styles.DivNoResultados}>No se han encontrado resultados</div>}
+                        <div>
+                            <Boton id='BtAnterior'
+                                visible={this.state.prevVisible}
+                                titulo='Anterior'
+                                onClick={this.handleOnPrev} />
+                            <Boton id='BtSiguiente'
+                                visible={this.state.nextVisible}
+                                titulo='Siguiente'
+                                onClick={this.handleOnNext} />
+                        </div>
                     </div>}
             </span>
         )
@@ -240,7 +214,9 @@ ComboBoxC.PropTypes = {
     valor: PropTypes.string,
     obligatorio: PropTypes.bool,
     mensajeObligatorio: PropTypes.string,
-    readonly: PropTypes.string
+    readonly: PropTypes.string,
+    offsetTopContenedor: PropTypes.number.isRequired,
+    offsetBottomContenedor: PropTypes.number.isRequired
 }
 
 ComboBoxC.defaultProps = {

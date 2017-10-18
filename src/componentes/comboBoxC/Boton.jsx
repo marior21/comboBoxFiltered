@@ -1,10 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import styles from './index.css'
 
 export default function Boton(props) {
     return (
-        <div style={{ display: props.visible ? 'block' : 'none' }}>
-            {props.visible && <input type='button' id={props.id} value={props.titulo} onClick={props.onClick} />}
+        <div style={{ display: props.visible ? 'inline' : 'none' }}>
+            {props.visible && <input type='button' className={styles.Boton} id={props.id} value={props.titulo} onClick={props.onClick} />}
         </div>
     )
 }
